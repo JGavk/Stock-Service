@@ -42,4 +42,5 @@ jobs:
             -Dsonar.projectKey=AndresMZMZ_Stock-Service
             -Dsonar.organization=andresmzmz
             -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
