@@ -13,3 +13,4 @@ class StockMicroserviceApplicationTests {
     }
 
 }
+// trigger sonarcloud
