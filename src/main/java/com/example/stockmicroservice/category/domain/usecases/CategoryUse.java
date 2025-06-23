@@ -19,7 +19,7 @@ public class CategoryUse implements CategoryServicePort {
         CategoryModel category = categoryPersistencePort.getCategoryByName(categoryModel.getName());
 
         if (category != null ) {
-            throw new CategoryAlreadyExistsException();
+            throw new CategoryAlreadyExistsException("Category with name '" + categoryModel.getName() + "' already exists");
         }
         categoryPersistencePort.save(categoryModel);
     }
