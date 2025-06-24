@@ -10,9 +10,9 @@ import com.example.stockmicroservice.category.domain.ports.in.CategoryServicePor
 import com.example.stockmicroservice.category.infrastructure.exceptions.ExceptionConstats;
 import com.example.stockmicroservice.commons.configurations.utils.Constants;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,13 +20,17 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImplementation implements CategoryService {
-    private final CategoryServicePort categoryServicePort;
-    @Autowired
-    private final CategoryDtoMapper categoryDtoMapper;
 
+    private final CategoryServicePort categoryServicePort;
+    private final CategoryDtoMapper categoryDtoMapper;
 
     @Override
     public SaveCategoryResponse save(SaveCategoryRequest request) {
+        // LÍNEA de Validación para request nulo
+        if (request == null) {
+            throw new IllegalArgumentException("Category request cannot be null");
+        }
+
         CategoryModel categoryModel = categoryDtoMapper.requestToModel(request);
         categoryServicePort.save(categoryModel);
         return new SaveCategoryResponse(Constants.SAVE_CATEGORY_RESPONSE_MESSAGE, LocalDateTime.now());
@@ -39,5 +43,4 @@ public class CategoryServiceImplementation implements CategoryService {
         }
         return categoryDtoMapper.modelToResponseList(categoryServicePort.getAllCategories(page, size));
     }
-
 }
