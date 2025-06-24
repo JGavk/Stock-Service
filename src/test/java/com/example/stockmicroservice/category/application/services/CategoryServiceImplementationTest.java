@@ -14,11 +14,11 @@ import com.example.stockmicroservice.category.infrastructure.exceptions.Exceptio
 import com.example.stockmicroservice.commons.configurations.utils.Constants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,34 +35,90 @@ public class CategoryServiceImplementationTest {
     private CategoryServiceImplementation categoryService;
 
     @Test
-    public void testSave() {
-        SaveCategoryRequest request = new SaveCategoryRequest("AppPements", "Some AppPements");
-        CategoryModel categoryModel = new CategoryModel(1L, "House", "Some houses");
-        SaveCategoryResponse expectedResponse = new SaveCategoryResponse(Constants.SAVE_CATEGORY_RESPONSE_MESSAGE, LocalDateTime.now());
+    public void testSave_ValidCategoryRequest_ReturnsExpectedResponse() {
+        // Given - Arrange
+        SaveCategoryRequest request = new SaveCategoryRequest("Electronics", "Electronic devices and accessories");
+        CategoryModel mappedCategoryModel = new CategoryModel(null, "Electronics",
+                "Electronic devices and accessories");
 
-        when(categoryDtoMapper.requestToModel(request)).thenReturn(categoryModel);
+        // Configure mocks - Note: categoryServicePort.save() is void, so no when()
+        // needed
+        when(categoryDtoMapper.requestToModel(request)).thenReturn(mappedCategoryModel);
+        // No need to mock categoryServicePort.save() since it's void
+        doNothing().when(categoryServicePort).save(any(CategoryModel.class));
 
+        // When - Act
         SaveCategoryResponse actualResponse = categoryService.save(request);
 
-        assertNotNull(actualResponse);
-        assertEquals(expectedResponse.message(), actualResponse.message());
+        // Then - Assert
+        // Verify the response is not null and contains expected message
+        assertNotNull(actualResponse, "Response should not be null");
+        assertEquals(Constants.SAVE_CATEGORY_RESPONSE_MESSAGE, actualResponse.message(),
+                "Response message should match expected constant");
+        assertNotNull(actualResponse.time(), "Timestamp should not be null");
 
+        // Verify that the mapper was called with the correct request
         verify(categoryDtoMapper, times(1)).requestToModel(request);
-        verify(categoryServicePort, times(1)).save(categoryModel);
+
+        // Verify that the repository was called with the correct entity
+        ArgumentCaptor<CategoryModel> categoryCaptor = ArgumentCaptor.forClass(CategoryModel.class);
+        verify(categoryServicePort, times(1)).save(categoryCaptor.capture());
+
+        CategoryModel capturedCategory = categoryCaptor.getValue();
+        assertEquals("Electronics", capturedCategory.getName(),
+                "Category name should match the request");
+        assertEquals("Electronic devices and accessories", capturedCategory.getDescription(),
+                "Category description should match the request");
+
+        // Verify no unexpected interactions
+        verifyNoMoreInteractions(categoryServicePort, categoryDtoMapper);
     }
+
+    @Test
+    public void testSave_ValidCategoryRequest_CallsRepositoryWithCorrectEntity() {
+        // Given - Arrange
+        SaveCategoryRequest request = new SaveCategoryRequest("Books", "Literature and educational books");
+        CategoryModel expectedCategoryModel = new CategoryModel(null, "Books", "Literature and educational books");
+
+        when(categoryDtoMapper.requestToModel(request)).thenReturn(expectedCategoryModel);
+        // For void methods, use doNothing() or simply verify the call
+        doNothing().when(categoryServicePort).save(expectedCategoryModel);
+
+        // When - Act
+        categoryService.save(request);
+
+        // Then - Assert
+        // Verify the exact entity passed to the repository
+        verify(categoryServicePort, times(1)).save(expectedCategoryModel);
+
+        // Verify the mapping process
+        verify(categoryDtoMapper, times(1)).requestToModel(request);
+    }
+
+    @Test
+    public void testSave_NullRequest_ThrowsException() {
+        // Given - Arrange
+        SaveCategoryRequest nullRequest = null;
+
+        // When & Then - Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            categoryService.save(nullRequest);
+        }, "Should throw IllegalArgumentException for null request");
+
+        // Verify no interactions with mocks when exception is thrown
+        verifyNoInteractions(categoryServicePort, categoryDtoMapper);
+    }
+
     @Test
     public void testGetAllCategories() {
-
         int page = 0;
         int size = 10;
         List<CategoryModel> categoryModels = Arrays.asList(
                 new CategoryModel(1L, "House", "House"),
-                new CategoryModel(2L, "Aparment", "Aparment thing")
-        );
+                new CategoryModel(2L, "Apartment", "Apartment thing"));
         List<CategoryResponse> expectedResponses = Arrays.asList(
                 new CategoryResponse(1L, "House", "House"),
-                new CategoryResponse(2L, "Aparment", "Aparment thing")
-        );
+                new CategoryResponse(2L, "Apartment", "Apartment thing"));
 
         when(categoryServicePort.getAllCategories(page, size)).thenReturn(categoryModels);
         when(categoryDtoMapper.modelToResponseList(categoryModels)).thenReturn(expectedResponses);
@@ -77,6 +133,7 @@ public class CategoryServiceImplementationTest {
         verify(categoryServicePort, times(1)).getAllCategories(page, size);
         verify(categoryDtoMapper, times(1)).modelToResponseList(categoryModels);
     }
+
     @Test
     public void testGetAllCategories_InvalidSize() {
         int page = 0;
@@ -90,6 +147,4 @@ public class CategoryServiceImplementationTest {
         verify(categoryServicePort, never()).getAllCategories(anyInt(), anyInt());
         verify(categoryDtoMapper, never()).modelToResponseList(anyList());
     }
-
-
 }
