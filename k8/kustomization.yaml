@@ -1,0 +1,7 @@
+resources:
+- persistence.yaml
+- database.yaml
+- servicesmysql.yaml
+- deployment-v1.yaml
+- deployment-v2.yaml
+- services.yaml
