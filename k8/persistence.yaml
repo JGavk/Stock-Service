@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce # Este modo de acceso significa que el volumen solo puede ser montado por un nodo a la vez.
+  resources:
+    requests:
+      storage: 1Gi
