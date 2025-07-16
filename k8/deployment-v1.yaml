@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-app-v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: spring-app
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: spring-app
+        version: v1
+    spec:
+      containers:
+        - name: spring-app
+          image: stock-service:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql-service:3306/stock-microservice?useSSL=false&allowPublicKeyRetrieval=true"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "Thereis76_"

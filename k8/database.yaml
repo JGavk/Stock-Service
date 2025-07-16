@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0 # Usamos la imagen oficial de MySQL versión 8.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3306 # Puerto estándar de MySQL
+          env:
+            # Estas son las variables de entorno que configurarán la base de datos.
+            - name: MYSQL_ROOT_PASSWORD
+              value: "Thereis76_" # ¡Considera usar Secrets de Kubernetes para las contraseñas en producción!
+            - name: MYSQL_DATABASE
+              value: "stock-microservice"
+          volumeMounts:
+            # Montamos el volumen persistente en el directorio donde MySQL guarda los datos.
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        # Aquí definimos el volumen que usará el PVC que creamos anteriormente.
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc

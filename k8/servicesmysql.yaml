@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service # Este es el nombre que las aplicaciones usarán para conectarse.
+spec:
+  selector:
+    app: mysql # Redirige el tráfico a los Pods con la etiqueta 'app: mysql'.
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP # Expone el servicio solo dentro del clúster.
