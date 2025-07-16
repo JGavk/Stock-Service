@@ -18,7 +18,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,7 +40,7 @@ public class CategoryServiceImplementationTest {
         CategoryModel mappedCategoryModel = new CategoryModel(null, "Electronics",
                 "Electronic devices and accessories");
 
-        // Configure mocks - Note: categoryServicePort.save() is void, so no when()
+        // Configure mocks - categoryServicePort.save() is void, so no when()
         // needed
         when(categoryDtoMapper.requestToModel(request)).thenReturn(mappedCategoryModel);
         // No need to mock categoryServicePort.save() since it's void
