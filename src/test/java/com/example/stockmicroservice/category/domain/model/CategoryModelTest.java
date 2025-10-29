@@ -1,40 +1,84 @@
 package com.example.stockmicroservice.category.domain.model;
 
+import com.example.stockmicroservice.category.domain.exceptions.MaxCharacterException;
+import com.example.stockmicroservice.category.domain.exceptions.MaxLengthException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 class CategoryModelTest {
 
     @Test
-    void getId() {
-        CategoryModel category = new CategoryModel(10L, "Tech", "Tech-related items");
-        assertEquals(10L, category.getId());
-    }
-
-    @Test
-    void getName() {
-        CategoryModel category = new CategoryModel(1L, "Books", "Books category");
+    void validCategory_ShouldCreateSuccessfully() {
+        CategoryModel category = new CategoryModel(1L, "Books", "Educational materials");
         assertEquals("Books", category.getName());
+        assertEquals("Educational materials", category.getDescription());
+        assertEquals(1L, category.getId());
     }
 
     @Test
-    void setName() {
-        CategoryModel category = new CategoryModel(2L, "Old Name", "Some description");
-        category.setName("New Name");
-        assertEquals("New Name", category.getName());
+    void settersAndGetters_ShouldWorkCorrectly() {
+        CategoryModel category = new CategoryModel(2L, "Tech", "Technology items");
+        category.setName("Updated Tech");
+        category.setDescription("Updated description");
+
+        assertEquals("Updated Tech", category.getName());
+        assertEquals("Updated description", category.getDescription());
     }
 
     @Test
-    void getDescription() {
-        CategoryModel category = new CategoryModel(3L, "Clothes", "All clothing items");
-        assertEquals("All clothing items", category.getDescription());
+    void nameOrDescriptionTooLong_ShouldThrowException() {
+        String tooLongName = "A".repeat(51);
+        String tooLongDesc = "D".repeat(91);
+
+        assertThrows(MaxLengthException.class,
+                () -> new CategoryModel(1L, tooLongName, "Valid desc"));
+
+        assertThrows(MaxCharacterException.class,
+                () -> new CategoryModel(1L, "Valid name", tooLongDesc));
     }
 
     @Test
-    void setDescription() {
-        CategoryModel category = new CategoryModel(4L, "Shoes", "Footwear");
-        category.setDescription("Updated footwear description");
-        assertEquals("Updated footwear description", category.getDescription());
+    void nullOrBlankFields_ShouldThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new CategoryModel(1L, null, "Valid"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new CategoryModel(1L, "Valid", null));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new CategoryModel(1L, "   ", "Valid"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new CategoryModel(1L, "Valid", "   "));
+    }
+
+    @Test
+    void nameAndDescriptionAtBoundary_ShouldNotThrow() {
+        String validName = "N".repeat(50);
+        String validDesc = "D".repeat(90);
+        assertDoesNotThrow(() -> new CategoryModel(1L, validName, validDesc));
+    }
+
+    @Test
+    void setters_ShouldThrowOnInvalidValues() {
+        CategoryModel category = new CategoryModel(1L, "Valid", "Valid");
+
+        assertThrows(MaxLengthException.class, () -> category.setName("A".repeat(51)));
+        assertThrows(MaxCharacterException.class, () -> category.setDescription("D".repeat(91)));
+        assertThrows(NullPointerException.class, () -> category.setName(null));
+        assertThrows(NullPointerException.class, () -> category.setDescription(null));
+    }
+    @Test
+    void settersAtLimit_ShouldWorkCorrectly() {
+        CategoryModel category = new CategoryModel(1L, "Init", "Init desc");
+        String nameLimit = "N".repeat(50);
+        String descLimit = "D".repeat(90);
+
+        category.setName(nameLimit);
+        category.setDescription(descLimit);
+
+        assertEquals(50, category.getName().length());
+        assertEquals(90, category.getDescription().length());
     }
 
 }

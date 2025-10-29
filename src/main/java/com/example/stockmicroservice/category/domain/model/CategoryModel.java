@@ -16,10 +16,16 @@ public class CategoryModel {
 
     public CategoryModel(Long id, String name, String description) {
        this.id = id;
-       if (name.length() > 50) throw new MaxLengthException();
-       this.name = Objects.requireNonNull(name, InnerConstants.FIELD_NAME_NULL_MESSAGE);
-       if (description.length() > 90) throw new MaxCharacterException();
-       this.description = Objects.requireNonNull(description, InnerConstants.FIELD_DESCRIPTION_EMPTY_MESSAGE);
+       this.name = validateNotBlank(name, InnerConstants.FIELD_NAME_NULL_MESSAGE);
+       if (this.name.length() > 50) throw new MaxLengthException();
+       this.description = validateNotBlank(description, InnerConstants.FIELD_DESCRIPTION_EMPTY_MESSAGE);
+       if (this.description.length() > 90) throw new MaxCharacterException();
+    }
+    private String validateNotBlank(String value, String x) {
+        if (value == null || value.trim().isEmpty() ) {
+            throw new IllegalArgumentException(InnerConstants.FIELD_NULL);
+        }
+        return value;
     }
 
 

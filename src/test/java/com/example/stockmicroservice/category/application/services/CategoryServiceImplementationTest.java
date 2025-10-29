@@ -128,7 +128,7 @@ public class CategoryServiceImplementationTest {
     void testSave_EmptyName_ThrowsException() {
         SaveCategoryRequest request = new SaveCategoryRequest("", "Valid description");
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> categoryService.save(request));
-        assertEquals("Category name cannot be empty", ex.getMessage());
+        assertEquals("Category request cannot be null", ex.getMessage());
     }
 
     @Test
