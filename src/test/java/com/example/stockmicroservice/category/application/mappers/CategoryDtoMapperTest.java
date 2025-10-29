@@ -4,6 +4,8 @@ import com.example.stockmicroservice.category.application.dto.request.SaveCatego
 import com.example.stockmicroservice.category.application.dto.response.CategoryResponse;
 import com.example.stockmicroservice.category.domain.model.CategoryModel;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -73,5 +75,66 @@ class CategoryDtoMapperTest {
         assertEquals(expectedResponses.get(1).name(), actualResponses.get(1).name());
 
         verify(categoryDtoMapper, times(1)).modelToResponseList(categoryModels);
+    }
+    @Test
+    void testRequestToModelWithEmptyName() {
+        SaveCategoryRequest request = new SaveCategoryRequest("", "Description valid");
+
+        CategoryModel expectedModel = new CategoryModel(null, "", "Description valid");
+        when(categoryDtoMapper.requestToModel(request)).thenReturn(expectedModel);
+
+        CategoryModel result = categoryDtoMapper.requestToModel(request);
+
+        assertNotNull(result);
+        assertTrue(result.getName().isEmpty(), "El nombre debería estar vacío");
+    }
+
+    @Test
+    void testRequestToModelWithMaxLengthName() {
+        String longName = "A".repeat(100); // límite permitido
+        SaveCategoryRequest request = new SaveCategoryRequest(longName, "Description valid");
+
+        CategoryModel expectedModel = new CategoryModel(null, longName, "Description valid");
+        when(categoryDtoMapper.requestToModel(request)).thenReturn(expectedModel);
+
+        CategoryModel result = categoryDtoMapper.requestToModel(request);
+
+        assertEquals(longName, result.getName());
+        assertEquals("Description valid", result.getDescription());
+    }
+
+    @Test
+    void testRequestToModelWithTooLongName() {
+        String tooLongName = "B".repeat(101); // excede el límite
+        SaveCategoryRequest request = new SaveCategoryRequest(tooLongName, "Valid description");
+
+        when(categoryDtoMapper.requestToModel(request))
+                .thenThrow(new IllegalArgumentException("Name length exceeds 100 characters"));
+
+        assertThrows(IllegalArgumentException.class, () -> categoryDtoMapper.requestToModel(request));
+    }
+
+    @Test
+    void testRequestToModelWithEmptyDescription() {
+        SaveCategoryRequest request = new SaveCategoryRequest("Books", "");
+
+        CategoryModel expectedModel = new CategoryModel(null, "Books", "");
+        when(categoryDtoMapper.requestToModel(request)).thenReturn(expectedModel);
+
+        CategoryModel result = categoryDtoMapper.requestToModel(request);
+
+        assertNotNull(result);
+        assertTrue(result.getDescription().isEmpty(), "La descripción debería estar vacía");
+    }
+
+    @Test
+    void testRequestToModelWithTooLongDescription() {
+        String longDescription = "C".repeat(101);
+        SaveCategoryRequest request = new SaveCategoryRequest("Books", longDescription);
+
+        when(categoryDtoMapper.requestToModel(request))
+                .thenThrow(new IllegalArgumentException("Description length exceeds 100 characters"));
+
+        assertThrows(IllegalArgumentException.class, () -> categoryDtoMapper.requestToModel(request));
     }
 }

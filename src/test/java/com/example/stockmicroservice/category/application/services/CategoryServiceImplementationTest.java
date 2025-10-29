@@ -35,31 +35,18 @@ public class CategoryServiceImplementationTest {
 
     @Test
     public void testSave_ValidCategoryRequest_ReturnsExpectedResponse() {
-        // Given - Arrange
+
         SaveCategoryRequest request = new SaveCategoryRequest("Electronics", "Electronic devices and accessories");
         CategoryModel mappedCategoryModel = new CategoryModel(null, "Electronics",
                 "Electronic devices and accessories");
-
-        // Configure mocks - categoryServicePort.save() is void, so no when()
-        // needed
         when(categoryDtoMapper.requestToModel(request)).thenReturn(mappedCategoryModel);
-        // No need to mock categoryServicePort.save() since it's void
         doNothing().when(categoryServicePort).save(any(CategoryModel.class));
-
-        // When - Act
         SaveCategoryResponse actualResponse = categoryService.save(request);
-
-        // Then - Assert
-        // Verify the response is not null and contains expected message
         assertNotNull(actualResponse, "Response should not be null");
         assertEquals(Constants.SAVE_CATEGORY_RESPONSE_MESSAGE, actualResponse.message(),
                 "Response message should match expected constant");
         assertNotNull(actualResponse.time(), "Timestamp should not be null");
-
-        // Verify that the mapper was called with the correct request
         verify(categoryDtoMapper, times(1)).requestToModel(request);
-
-        // Verify that the repository was called with the correct entity
         ArgumentCaptor<CategoryModel> categoryCaptor = ArgumentCaptor.forClass(CategoryModel.class);
         verify(categoryServicePort, times(1)).save(categoryCaptor.capture());
 
@@ -69,42 +56,33 @@ public class CategoryServiceImplementationTest {
         assertEquals("Electronic devices and accessories", capturedCategory.getDescription(),
                 "Category description should match the request");
 
-        // Verify no unexpected interactions
         verifyNoMoreInteractions(categoryServicePort, categoryDtoMapper);
     }
 
     @Test
     public void testSave_ValidCategoryRequest_CallsRepositoryWithCorrectEntity() {
-        // Given - Arrange
         SaveCategoryRequest request = new SaveCategoryRequest("Books", "Literature and educational books");
         CategoryModel expectedCategoryModel = new CategoryModel(null, "Books", "Literature and educational books");
-
         when(categoryDtoMapper.requestToModel(request)).thenReturn(expectedCategoryModel);
-        // For void methods, use doNothing() or simply verify the call
         doNothing().when(categoryServicePort).save(expectedCategoryModel);
 
-        // When - Act
         categoryService.save(request);
 
-        // Then - Assert
-        // Verify the exact entity passed to the repository
         verify(categoryServicePort, times(1)).save(expectedCategoryModel);
 
-        // Verify the mapping process
         verify(categoryDtoMapper, times(1)).requestToModel(request);
     }
 
     @Test
     public void testSave_NullRequest_ThrowsException() {
-        // Given - Arrange
+
         SaveCategoryRequest nullRequest = null;
 
-        // When & Then - Act & Assert
+
         assertThrows(IllegalArgumentException.class, () -> {
             categoryService.save(nullRequest);
         }, "Should throw IllegalArgumentException for null request");
 
-        // Verify no interactions with mocks when exception is thrown
         verifyNoInteractions(categoryServicePort, categoryDtoMapper);
     }
 
@@ -145,5 +123,19 @@ public class CategoryServiceImplementationTest {
 
         verify(categoryServicePort, never()).getAllCategories(anyInt(), anyInt());
         verify(categoryDtoMapper, never()).modelToResponseList(anyList());
+    }
+    @Test
+    void testSave_EmptyName_ThrowsException() {
+        SaveCategoryRequest request = new SaveCategoryRequest("", "Valid description");
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> categoryService.save(request));
+        assertEquals("Category name cannot be empty", ex.getMessage());
+    }
+
+    @Test
+    void testSave_NameTooLong_ThrowsException() {
+        String longName = "A".repeat(101);
+        SaveCategoryRequest request = new SaveCategoryRequest(longName, "Valid description");
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> categoryService.save(request));
+        assertEquals("Category name exceeds 100 characters", ex.getMessage());
     }
 }
