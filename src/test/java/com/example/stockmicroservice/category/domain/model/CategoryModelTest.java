@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CategoryModelTest {
 
     @Test
-    void validCategory_ShouldCreateSuccessfully() {
+    void validCategory_BasicCreation() {
         CategoryModel category = new CategoryModel(1L, "Books", "Educational materials");
         assertEquals("Books", category.getName());
         assertEquals("Educational materials", category.getDescription());
@@ -16,7 +16,7 @@ class CategoryModelTest {
     }
 
     @Test
-    void settersAndGetters_ShouldWorkCorrectly() {
+    void settersAndGetters_Test() {
         CategoryModel category = new CategoryModel(2L, "Tech", "Technology items");
         category.setName("Updated Tech");
         category.setDescription("Updated description");
@@ -26,7 +26,7 @@ class CategoryModelTest {
     }
 
     @Test
-    void nameOrDescriptionTooLong_ShouldThrowException() {
+    void nameOrDescriptionTooLong_ExceptionThrown() {
         String tooLongName = "A".repeat(51);
         String tooLongDesc = "D".repeat(91);
 
